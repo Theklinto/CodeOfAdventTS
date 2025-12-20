@@ -55,6 +55,7 @@ test("Example1", () => {
     expect(getInvalidProductsSumExtended(data)).toBe(4174379265);
 });
 
+//Slow
 test("Input2", () => {
     const data = getFileContent(resolve(import.meta.dirname, "part_one.txt"), { splitBy: "," });
     expect(getInvalidProductsSumExtended(data)).toBe(38731915928);
