@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Matrix } from "../../matrix";
+import { Matrix, type Direction } from "../../matrix";
 import { getFileContent } from "../utilts";
 import { resolve } from "path";
 
@@ -45,4 +45,50 @@ function getBeamSplits(input: string[]): number {
     }
 
     return splittersHit;
+}
+
+test("Example2", () => {
+    const data = getFileContent(resolve(import.meta.dirname, "example.txt"));
+    const result = getBeamQuantumSplits(data);
+    expect(result).toBe(40);
+});
+test("Input2", () => {
+    const data = getFileContent(resolve(import.meta.dirname, "input.txt"));
+    const result = getBeamQuantumSplits(data);
+    expect(result).toBe(1690);
+});
+function getBeamQuantumSplits(input: string[] | Matrix): number {
+    let timeLines = 1;
+
+    function resolveRemainingMatrix(input: string[] | Matrix) {
+        const matrix = Array.isArray(input) ? new Matrix(input) : input;
+        for (const { value, col, row } of matrix) {
+            switch (value) {
+                case instructions.start: {
+                    matrix.replace(instructions.beam, [col, row], "down");
+                    continue;
+                }
+                case instructions.beam: {
+                    const splitterIsBelow =
+                        matrix.peek([col, row], "down") === instructions.splitter;
+                    if (splitterIsBelow) {
+                        timeLines++;
+                        for (const direction of ["downLeft", "downRight"] satisfies Direction[]) {
+                            const subMatrix = matrix.clone();
+                            subMatrix.replace(instructions.beam, [col, row], direction);
+                            subMatrix.matrix.splice(0, row + 1);
+                            resolveRemainingMatrix(subMatrix);
+                        }
+                        continue;
+                    }
+
+                    matrix.replace(instructions.beam, [col, row], "down");
+                }
+            }
+        }
+    }
+
+    resolveRemainingMatrix(input);
+
+    return timeLines;
 }
